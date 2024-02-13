@@ -2,7 +2,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:7091")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
+        });
+});
 
 
 var app = builder.Build();

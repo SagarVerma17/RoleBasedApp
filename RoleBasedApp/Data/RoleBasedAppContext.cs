@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using RoleBasedApp.Models;
+using RoleBasedLibraryManagement.Models;
 
 namespace RoleBasedApp.Data
 {
@@ -20,5 +21,6 @@ namespace RoleBasedApp.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Blog> Blog { get; set; }
+        public DbSet<RoleBasedLibraryManagement.Models.UserDTO> UserDTO { get; set; } = default!;
     }
 }

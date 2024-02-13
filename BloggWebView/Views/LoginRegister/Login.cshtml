@@ -66,6 +66,17 @@
         .btn-delete:hover {
             background-color: #c82333;
         }
+
+    .edit-form {
+        display: none; /* Initially hide the editing interface */
+    }
+
+    .username {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
 </style>
 
 <h1>Welcome, <span id="username">@ViewBag.UserName</span>!</h1>
@@ -77,26 +88,99 @@
 <div class="container blog-container">
     @foreach (var item in Model)
     {
-        <div class="blog-box">
+        <div class="blog-box" id="blog-@item.Title">
+            <div class="username">By: @Html.DisplayFor(modelItem => item.Username)</div>
             <h3 class="blog-title">@Html.DisplayFor(modelItem => item.Title)</h3>
             <p class="blog-meta">Published on: @Html.DisplayFor(modelItem => item.TimeStamp)</p>
-            <p class="blog-meta">By: @Html.DisplayFor(modelItem => item.Username)</p>
             <p class="blog-description">@Html.DisplayFor(modelItem => item.Description)</p>
 
             @if (ViewBag.UserName == item.Username)
             {
                 <div class="action-links">
-                    <form asp-action="Edittitle" asp-route-title="@item.Title" method="post">
-                        <button type="submit" class="btn btn-primary">Edit</button>
-                    </form>
-                   @*  @Html.ActionLink("Delete", "Delete", new { id = item.Title }, new { @class = "btn btn-delete" }) *@
-
-                   <form asp-action="Delete" asp-route-title="@item.Title" method="post">
-                        <button type="submit" class="btn btn-delete">Delete</button>
-                    </form>
-
+                    <button class="btn btn-primary btn-edit" onclick="showEditForm('@item.Title', '@item.Description')">Edit</button>
+                    <button class="btn btn-danger btn-delete" onclick="deleteBlog('@item.Title')">Delete</button>
                 </div>
+
+                @* <form class="edit-form" id="edit-form-@item.Title">
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" class="form-control" id="title-@item.Title" value="@item.Title">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea class="form-control" id="description-@item.Title">@item.Description</textarea>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="saveEdit('@item.Title')">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideEditForm('@item.Title')">Cancel</button>
+                </form> *@
+
+                <form class="edit-form" id="edit-form-@item.Title">
+                    <div class="form-group">
+                        <label>Title:</label>
+                        <span id="title-@item.Title">@item.Title</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea class="form-control" id="description-@item.Title">@item.Description</textarea>
+                    </div>
+                    <button type="button" class="btn btn-success" onclick="saveEdit('@item.Title')">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideEditForm('@item.Title')">Cancel</button>
+                </form>
+
             }
         </div>
     }
 </div>
+
+<script>
+    function showEditForm(title, description) {
+        // Hide the blog content and show the editing interface for the clicked blog
+        $('#blog-' + title + ' .blog-title, #blog-' + title + ' .blog-meta, #blog-' + title + ' .blog-description, #blog-' + title + ' .action-links').hide();
+        $('#edit-form-' + title).show();
+    }
+
+    function hideEditForm(title) {
+        // Show the blog content and hide the editing interface for the clicked blog
+        $('#blog-' + title + ' .blog-title, #blog-' + title + ' .blog-meta, #blog-' + title + ' .blog-description, #blog-' + title + ' .action-links').show();
+        $('#edit-form-' + title).hide();
+    }
+
+    function saveEdit(title) {
+        var newTitle = $('#title-' + title).val();
+        var newDescription = $('#description-' + title).val();
+        var username = '@ViewBag.UserName'; // Get the username from ViewBag
+        $.ajax({
+            url: 'https://localhost:7091/api/Auth/blogs/' + title,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ title: newTitle, description: newDescription, username: username }), // Include username in the payload
+            success: function (response) {
+                // Update the blog content with the new title and description
+                $('#blog-' + title + ' .blog-title').text(newTitle);
+                $('#blog-' + title + ' .blog-description').text(newDescription);
+
+                // Show the blog content and hide the editing interface
+                hideEditForm(title);
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+
+    function deleteBlog(title) {
+        $.ajax({
+            url: 'https://localhost:7091/api/Auth/blogs/' + title,
+            type: 'DELETE',
+            success: function (response) {
+                // Remove the deleted blog entry from the page
+                $('#blog-' + title).remove();
+                console.log("Blog deleted successfully.");
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+</script>

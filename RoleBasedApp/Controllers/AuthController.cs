@@ -194,6 +194,27 @@ namespace RoleBasedLibraryManagement.Controllers
             }
         }
 
+        [HttpPut("blogs/{title}")]
+        public IActionResult EditBlog(string title, [FromBody] Blog model)
+        {
+            var blog = _dbContext.Blog.FirstOrDefault(b => b.Title == title);
+            if (blog == null)
+            {
+                return NotFound();
+            }
+
+            // Update the non-key properties
+            blog.Description = model.Description;
+            blog.TimeStamp = DateTime.Now; // Optionally update the modified date
+
+            // Mark the entity as modified and save changes
+            _dbContext.Entry(blog).State = EntityState.Modified;
+            _dbContext.SaveChanges();
+
+            return Ok();
+        }
+
+
 
         [HttpPost("newBlogs")]
         public async Task<IActionResult> AddBlog(Blog blog)

@@ -23,6 +23,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 var app = builder.Build();
 
+app.UseCors(builder => builder
+    .AllowAnyOrigin() // This allows requests from any origin. You can also restrict it to specific origins.
+    .AllowAnyMethod() // This allows requests with any HTTP method (GET, POST, etc.).
+    .AllowAnyHeader()); // This allows requests with any HTTP headers.
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
